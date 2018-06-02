@@ -76,15 +76,15 @@ public class Equipo {
     // ---------- CRUD BÁSICO
     public boolean create() {
         boolean exito = true;
-        try(Connection conn = ConexionBd.obtener()){
+        try (Connection conn = ConexionBd.obtener()) {
             String sql = "INSERT INTO equipo (nombre,ciudad,pais) VALUES (?,?,?)";
-            try(PreparedStatement stmt = conn.prepareStatement(sql)){
-               stmt.setString(1, getNombre());
-               stmt.setString(2, getCiudad());
-               stmt.setString(3, getPais());
-               stmt.executeUpdate();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, getNombre());
+                stmt.setString(2, getCiudad());
+                stmt.setString(3, getPais());
+                stmt.executeUpdate();
             }
-            
+
         } catch (SQLException ex) {
             exito = false;
             ex.printStackTrace();
@@ -94,18 +94,18 @@ public class Equipo {
 
     public boolean retrieve() {
         boolean exito = true;
-        try(Connection conn = ConexionBd.obtener()){
+        try (Connection conn = ConexionBd.obtener()) {
             String sql = "SELECT nombre ,ciudad ,pais FROM equipo where id = ?";
-            try(PreparedStatement stmt = conn.prepareStatement(sql)){
-                stmt.setInt(1, getId()); 
-                try(ResultSet rs = stmt.executeQuery()){
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, getId());
+                try (ResultSet rs = stmt.executeQuery()) {
                     rs.next();
                     setNombre(rs.getString("nombre"));
                     setCiudad(rs.getString("ciudad"));
                     setPais(rs.getString("pais"));
                 }
-            }    
-        } catch (SQLException ex){
+            }
+        } catch (SQLException ex) {
             exito = false;
             ex.printStackTrace();
         }
@@ -114,16 +114,16 @@ public class Equipo {
 
     public boolean update() {
         boolean exito = true;
-        try(Connection conn = ConexionBd.obtener()){
+        try (Connection conn = ConexionBd.obtener()) {
             String sql = "UPDATE equipo SET nombre = ?, ciudad = ?, pais = ? where id = ?";
-            try(PreparedStatement stmt = conn.prepareStatement(sql)){
-                 stmt.setString(1, getNombre());
-                 stmt.setString(2, getCiudad());
-                 stmt.setString(3, getPais());
-                 stmt.setInt(4, getId());
-                 stmt.executeUpdate();
-             }
-        } catch (SQLException ex){
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, getNombre());
+                stmt.setString(2, getCiudad());
+                stmt.setString(3, getPais());
+                stmt.setInt(4, getId());
+                stmt.executeUpdate();
+            }
+        } catch (SQLException ex) {
             exito = false;
             ex.printStackTrace();
         }
@@ -132,13 +132,13 @@ public class Equipo {
 
     public boolean delete() {
         boolean exito = true;
-        try(Connection conn = ConexionBd.obtener()){
+        try (Connection conn = ConexionBd.obtener()) {
             String sql = "DELETE FROM equipo WHERE id = ?";
-            try(PreparedStatement stmt = conn.prepareStatement(sql)){
-                 stmt.setInt(1, getId());
-                 stmt.executeUpdate();
-             }
-        } catch (SQLException ex){
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, getId());
+                stmt.executeUpdate();
+            }
+        } catch (SQLException ex) {
             exito = false;
             ex.printStackTrace();
         }
@@ -147,10 +147,26 @@ public class Equipo {
 
     // ----------- Otras, de instancia, relacionadas con la fk
     public List<Jugador> getJugadores() {
-        // POR HACER.
         List<Jugador> resultado = new ArrayList<>();
-        resultado.add(new Jugador(1, "Paco", "López", 19));
-        resultado.add(new Jugador(2, "Luisa", "Martínez", 21));
+        try (Connection conn = ConexionBd.obtener()) {
+            String sql = "SELECT nombre ,apellidos ,edad FROM jugador where idequipo = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, getId());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        resultado.add(
+                                new Jugador(
+                                        rs.getString("nombre"),
+                                        rs.getString("apellidos"),
+                                        rs.getInt("edad")
+                                )
+                        );
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
         return resultado;
     }
 
@@ -160,16 +176,42 @@ public class Equipo {
         if (!(orden >= 0 && orden <= 1)) {
             throw new IllegalArgumentException("Parámetro de orden de equipos no admitido");
         }
+        List<Equipo> resultados = new ArrayList<>();
+        String sql = "SELECT id, nombre, ciudad, pais FROM equipo";
+        if (!busqueda.equalsIgnoreCase("")) {
+            sql = sql + " nombre LIKE lower(?) OR pais LIKE lower(?) OR ciudad LIKE lower(?)";
+        }
 
-        // Si la búsqueda es una cadena vacía lanzamos una select sin WHERE
-        // y si tiene algo con WHERE y varios LIKEs
-        // POR HACER
-        List<Equipo> resultado = new ArrayList<>();
-        resultado.add(
-                new Equipo(1, "Halcones calvos", "Getafe", "España"));
-        resultado.add(
-                new Equipo(2, "Dumma den som läser den", "Visby", "Suecia"));
-        return resultado;
+        if (orden == ORDEN_NOMBRE) {
+            sql = sql + " ORDER BY nombre";
+        } else if (orden == ORDEN_PAIS) {
+            sql = sql + " ORDER BY pais";
+        }
+
+        try (Connection conn = ConexionBd.obtener()) {
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                if (!busqueda.equalsIgnoreCase("")) {
+                    stmt.setString(1, "%" + busqueda + "%");
+                    stmt.setString(2, "%" + busqueda + "%");
+                    stmt.setString(3, "%" + busqueda + "%");
+                }
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        resultados.add(new Equipo(
+                                rs.getInt("id"),
+                                rs.getString("nombre"),
+                                rs.getString("ciudad"),
+                                rs.getString("pais")
+                        )
+                        );
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return resultados;
 
     }
 
