@@ -4,7 +4,9 @@
  * and open the template in the editor.
  */
 package app;
+
 import model.*;
+
 /**
  *
  * @author victor
@@ -13,17 +15,18 @@ public class EquipoJDialog extends javax.swing.JDialog {
 
     public static int ACCION_CANCELAR = -1;
     public static int ACCION_GUARDAR = 0;
-    
+
     private Equipo equipo;
     private int accion;
+
     /**
      * Creates new form EquipoJDialog
      */
-        
+
     public Equipo getEquipo() {
         return equipo;
     }
-   
+
     // El botón apretado.
     public int getAccion() {
         return accion;
@@ -37,7 +40,6 @@ public class EquipoJDialog extends javax.swing.JDialog {
         jTextFieldPais.setText(equipo.getPais());
     }
 
-    
     // Constructor modificado para ser siempre modal, y aceptar un equipo como
     // parámetro
     public EquipoJDialog(java.awt.Frame parent, Equipo equipo) {
@@ -156,9 +158,15 @@ public class EquipoJDialog extends javax.swing.JDialog {
     private void jButtonGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGuardarActionPerformed
         boolean exito;
         if (equipo.getId() < 1) {
-           exito = equipo.create();
+            equipo.setCiudad(jTextFieldCiudad.getText());
+            equipo.setNombre(jTextFieldNombre.getText());
+            equipo.setPais(jTextFieldPais.getText());
+            exito = equipo.create();
         } else {
-           exito = equipo.update();
+            exito = equipo.update();
+            equipo.setCiudad(jTextFieldCiudad.getText());
+            equipo.setNombre(jTextFieldNombre.getText());
+            equipo.setPais(jTextFieldPais.getText());
         }
         this.accion = ACCION_GUARDAR;
         this.setVisible(false);
@@ -167,7 +175,6 @@ public class EquipoJDialog extends javax.swing.JDialog {
     private void jButtonCerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCerrarActionPerformed
         this.setVisible(false);
     }//GEN-LAST:event_jButtonCerrarActionPerformed
-
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -182,6 +189,5 @@ public class EquipoJDialog extends javax.swing.JDialog {
     private javax.swing.JTextField jTextFieldNombre;
     private javax.swing.JTextField jTextFieldPais;
     // End of variables declaration//GEN-END:variables
-
 
 }
