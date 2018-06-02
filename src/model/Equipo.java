@@ -10,7 +10,7 @@ import java.sql.*;
 
 /**
  *
- * @author victor
+ * @author Iván Maldonado Fernandez
  */
 public class Equipo {
 
@@ -75,25 +75,74 @@ public class Equipo {
 
     // ---------- CRUD BÁSICO
     public boolean create() {
-
-        return true;
+        boolean exito = true;
+        try(Connection conn = ConexionBd.obtener()){
+            String sql = "INSERT INTO equipo (nombre,ciudad,pais) VALUES (?,?,?)";
+            try(PreparedStatement stmt = conn.prepareStatement(sql)){
+               stmt.setString(1, getNombre());
+               stmt.setString(2, getCiudad());
+               stmt.setString(3, getPais());
+               stmt.executeUpdate();
+            }
+            
+        } catch (SQLException ex) {
+            exito = false;
+            ex.printStackTrace();
+        }
+        return exito;
     }
 
     public boolean retrieve() {
-        // POR HACER
-        setId(33);
-        setNombre("Equipo ejemplo");
-        setCiudad("Ciudad ejemplo");
-        setPais("Pais ejemplo");
-        return true;
+        boolean exito = true;
+        try(Connection conn = ConexionBd.obtener()){
+            String sql = "SELECT nombre ,ciudad ,pais FROM equipo where id = ?";
+            try(PreparedStatement stmt = conn.prepareStatement(sql)){
+                stmt.setInt(1, getId()); 
+                try(ResultSet rs = stmt.executeQuery()){
+                    rs.next();
+                    setNombre(rs.getString("nombre"));
+                    setCiudad(rs.getString("ciudad"));
+                    setPais(rs.getString("pais"));
+                }
+            }    
+        } catch (SQLException ex){
+            exito = false;
+            ex.printStackTrace();
+        }
+        return exito;
     }
 
     public boolean update() {
-        return true;
+        boolean exito = true;
+        try(Connection conn = ConexionBd.obtener()){
+            String sql = "UPDATE equipo SET nombre = ?, ciudad = ?, pais = ? where id = ?";
+            try(PreparedStatement stmt = conn.prepareStatement(sql)){
+                 stmt.setString(1, getNombre());
+                 stmt.setString(2, getCiudad());
+                 stmt.setString(3, getPais());
+                 stmt.setInt(4, getId());
+                 stmt.executeUpdate();
+             }
+        } catch (SQLException ex){
+            exito = false;
+            ex.printStackTrace();
+        }
+        return exito;
     }
 
     public boolean delete() {
-        return true;
+        boolean exito = true;
+        try(Connection conn = ConexionBd.obtener()){
+            String sql = "DELETE FROM equipo WHERE id = ?";
+            try(PreparedStatement stmt = conn.prepareStatement(sql)){
+                 stmt.setInt(1, getId());
+                 stmt.executeUpdate();
+             }
+        } catch (SQLException ex){
+            exito = false;
+            ex.printStackTrace();
+        }
+        return exito;
     }
 
     // ----------- Otras, de instancia, relacionadas con la fk
