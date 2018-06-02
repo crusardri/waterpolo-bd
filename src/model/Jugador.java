@@ -10,7 +10,7 @@ import java.sql.*;
 
 /**
  *
- * @author victor
+ * @author Iván Maldonado Fernandez
  */
 public class Jugador {
 
@@ -84,19 +84,77 @@ public class Jugador {
     // --------- OPERACIONES BD ----------------------------------------
     // ---------- CRUD BÁSICO
     public boolean create() {
-        return true;
+        boolean exito = true;
+        try (Connection conn = ConexionBd.obtener()){
+            String sql = "INSERT INTO jugador(nombre, apellidos, edad, idequipo)"
+                    + " values(? , ? , ? , ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)){
+                stmt.setString(1, getNombre());
+                stmt.setString(2, getApellidos());
+                stmt.setInt(3, getEdad());
+                stmt.setInt(4, getIdEquipo());
+                stmt.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            exito = false;
+        }
+        return exito;
     }
 
     public boolean retrieve() {
-        return true;
+        boolean exito = true;
+        try (Connection conn = ConexionBd.obtener()) {
+            String sql = "SELECT nombre, apellidos, edad, idequipo FROM jugador WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)){
+                stmt.setInt(1, this.id);
+                try (ResultSet rs = stmt.executeQuery()){
+                    rs.next();
+                    setNombre(rs.getString("nombre"));
+                    setApellidos(rs.getString("apellidos"));
+                    setEdad(rs.getInt("edad"));
+                    setIdEquipo(rs.getInt("idequipo"));
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            exito = false;
+        }
+        return exito;
     }
 
     public boolean update() {
-        return true;
+        boolean exito = true;
+        try (Connection conn = ConexionBd.obtener()) {
+            String sql = "UPDATE jugador SET nombre = ?, apellidos = 0, "
+                    + "edad = 0, idequip = ?, WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)){
+                stmt.setString(1, getNombre());
+                stmt.setString(2, getApellidos());
+                stmt.setInt(3, getEdad());
+                stmt.setInt(4, getIdEquipo());
+                stmt.setInt(5, this.id);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            exito = false;
+        }
+        return exito;
     }
 
     public boolean delete() {
-        return true;
+        boolean exito = true;
+        try(Connection conn = ConexionBd.obtener()){
+            String sql = "DELETE FROM jugador WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)){
+                stmt.setInt(1, this.id);
+                stmt.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            exito = false;
+        }
+        return exito;
     }
 
     // ----------- Otras, de clase, no relacionadas con ÉSTE (this) objeto
