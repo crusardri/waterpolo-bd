@@ -159,13 +159,61 @@ public class Jugador {
 
     // ----------- Otras, de clase, no relacionadas con ÉSTE (this) objeto
     public static List<Jugador> obtenerJugadores(String busqueda, boolean esJunior, boolean esClass, boolean esMaster) {
-        /* Junior:  14 años o más y menos de 18.
-        Class: 18 o más y menos de 26.
-        Master: 26 años o más. */
-
         List<Jugador> resultado = new ArrayList<>();
-        resultado.add(new Jugador("Paco", "López", 19));
-        resultado.add(new Jugador("Luisa", "Martínez", 21));
+        String sql = "SELECT id, nombre, apellidos, edad, idequipo FROM jugador ";
+        String junior = " edad < 18 ";
+        String classS = " edad >= 26 AND edad < 26 ";
+        String master = " edad >= 26 ";
+        //Si contiene busqueda
+        if (!busqueda.equalsIgnoreCase("")){
+            sql = sql + "WHERE nombre LIKE(?) OR apellidos LIKE(?) ";
+            //Si es Junior
+            if (esJunior){
+                sql = sql + " AND " + junior; 
+            //Si es Class
+            } else if(esClass) {
+                sql = sql + " AND " + classS;   
+            //Si es Master
+            } else if(esMaster) {
+                sql = sql + " AND " + master;
+            }
+        //Si no contiene busqueda
+        } else {
+            //Si es Junior
+            if (esJunior){
+                sql = sql + " WHERE " + junior;
+            //Si es Class
+            } else if(esClass) {
+                sql = sql + " WHERE " + classS;
+            //Si es Master
+            } else if(esMaster) {
+                sql = sql + " WHERE " + master;
+            }
+        }
+        System.err.println(sql);
+        try (Connection conn = ConexionBd.obtener()){
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, "%" + busqueda + "%");
+                stmt.setString(2, "%" + busqueda + "%");
+                try(ResultSet rs = stmt.executeQuery()){
+                    while(rs.next()){
+                        resultado.add(
+                            new Jugador(
+                                rs.getInt("id"),
+                                rs.getString("nombre"),
+                                rs.getString("apellidos"),
+                                rs.getInt("edad"),
+                                rs.getInt("idequipo")
+                            )
+                        );
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        
+        
         return resultado;
     }
 }
