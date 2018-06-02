@@ -10,7 +10,7 @@ import java.sql.*;
 
 /**
  *
- * @author Iván Maldonado Fernandez
+ * @author Iván Maldonado Fernández
  */
 public class Equipo {
 
@@ -84,7 +84,6 @@ public class Equipo {
                 stmt.setString(3, getPais());
                 stmt.executeUpdate();
             }
-
         } catch (SQLException ex) {
             exito = false;
             ex.printStackTrace();
@@ -149,7 +148,8 @@ public class Equipo {
     public List<Jugador> getJugadores() {
         List<Jugador> resultado = new ArrayList<>();
         try (Connection conn = ConexionBd.obtener()) {
-            String sql = "SELECT nombre ,apellidos ,edad FROM jugador where idequipo = ?";
+            String sql = "SELECT nombre , apellidos , edad FROM jugador WHERE idequipo = ?";
+            //System.out.println(sql.replace("?", String.format("%d", getId())));
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, getId());
                 try (ResultSet rs = stmt.executeQuery()) {
@@ -179,7 +179,7 @@ public class Equipo {
         List<Equipo> resultados = new ArrayList<>();
         String sql = "SELECT id, nombre, ciudad, pais FROM equipo";
         if (!busqueda.equalsIgnoreCase("")) {
-            sql = sql + " nombre LIKE lower(?) OR pais LIKE lower(?) OR ciudad LIKE lower(?)";
+            sql = sql + " WHERE nombre LIKE lower(?) OR pais LIKE LOWER(?) OR ciudad LIKE LOWER(?)";
         }
 
         if (orden == ORDEN_NOMBRE) {

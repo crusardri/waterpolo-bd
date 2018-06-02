@@ -10,7 +10,7 @@ import java.sql.*;
 
 /**
  *
- * @author Iván Maldonado Fernandez
+ * @author Iván Maldonado Fernández
  */
 public class Jugador {
 
@@ -80,6 +80,10 @@ public class Jugador {
     public void setIdEquipo(int idEquipo) {
         this.idEquipo = idEquipo;
     }
+    
+    public int getId(){
+        return this.id;
+    }
 
     // --------- OPERACIONES BD ----------------------------------------
     // ---------- CRUD BÁSICO
@@ -126,8 +130,8 @@ public class Jugador {
     public boolean update() {
         boolean exito = true;
         try (Connection conn = ConexionBd.obtener()) {
-            String sql = "UPDATE jugador SET nombre = ?, apellidos = 0, "
-                    + "edad = 0, idequip = ?, WHERE id = ?";
+            String sql = "UPDATE jugador SET nombre = ?, apellidos = ?, "
+                    + "edad = ?, idequipo = ? WHERE id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(sql)){
                 stmt.setString(1, getNombre());
                 stmt.setString(2, getApellidos());
@@ -162,7 +166,7 @@ public class Jugador {
         List<Jugador> resultado = new ArrayList<>();
         String sql = "SELECT id, nombre, apellidos, edad, idequipo FROM jugador ";
         String junior = " edad < 18 ";
-        String classS = " edad >= 26 AND edad < 26 ";
+        String classS = " edad >= 18 AND edad < 26 ";
         String master = " edad >= 26 ";
         //Si contiene busqueda
         if (!busqueda.equalsIgnoreCase("")){
@@ -190,11 +194,13 @@ public class Jugador {
                 sql = sql + " WHERE " + master;
             }
         }
-        System.err.println(sql);
+        System.err.format("Sentencia SQL: %s%n",sql);
         try (Connection conn = ConexionBd.obtener()){
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, "%" + busqueda + "%");
-                stmt.setString(2, "%" + busqueda + "%");
+                if (!busqueda.equalsIgnoreCase("")){
+                    stmt.setString(1, "%" + busqueda + "%");
+                    stmt.setString(2, "%" + busqueda + "%");
+                }
                 try(ResultSet rs = stmt.executeQuery()){
                     while(rs.next()){
                         resultado.add(
